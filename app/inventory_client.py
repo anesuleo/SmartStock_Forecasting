@@ -14,24 +14,24 @@ def fetch_movements(item_id: int) -> list[dict]:
     """
     try:
         response = requests.get(
-            f"{INVENTORY_API}/api/movements",
-            params={"limit": 1000},
-            timeout=5
-        )
+        f"{INVENTORY_API}/api/movements",
+        params={"item_id": item_id, "limit": 1000},
+        timeout=30
+    )
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         raise RuntimeError(f"Failed to reach inventory service: {e}")
 
     all_movements = response.json()
 
-    # Filter to only OUT movements for this item
+    # Just return all results directly — already filtered by the API
     sales = [
         {
             "movement_date": m["movement_date"],
             "quantity": m["quantity"]
         }
-        for m in all_movements
-        if m["inventory_id"] == item_id and m["movement_type"] == "OUT"
+        for m in response.json()
+        if m["movement_type"] == "OUT"
     ]
 
     return sales
